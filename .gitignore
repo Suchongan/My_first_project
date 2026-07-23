@@ -1,2 +1,4 @@
-tb/obj_dir/
+tb/obj_dir*/
 *.vcd
+tb/jrp_func4_sweep.csv
+tb/jrp_func4_transfer.png
