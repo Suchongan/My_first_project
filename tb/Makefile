@@ -4,19 +4,9 @@ VERILATOR_FLAGS := --binary --timing --trace -Wall \
                     -Wno-DECLFILENAME -Wno-UNUSEDSIGNAL -Wno-UNUSEDPARAM \
                     -Wno-BLKSEQ -Wno-SYNCASYNCNET -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC
 
-.PHONY: all run run-lsc run-jrp run-jrp4 waves clean
+.PHONY: all run run-jrp run-jrp4 waves clean
 
-all: run-lsc run-jrp run-jrp4
-
-# --- LSC_Func1 -------------------------------------------------------------
-LSC_TOP     := lsc_func1_tb
-LSC_OBJ_DIR := obj_dir_lsc
-LSC_RTL     := $(RTL_DIR)/LSC_Func1.v
-LSC_TB      := lsc_func1_ref_pkg.sv lsc_func1_tb.sv
-
-run-lsc:
-	verilator $(VERILATOR_FLAGS) --top-module $(LSC_TOP) -Mdir $(LSC_OBJ_DIR) $(LSC_TB) $(LSC_RTL)
-	./$(LSC_OBJ_DIR)/V$(LSC_TOP)
+all: run-jrp run-jrp4
 
 # --- JRP_CONV ----------------------------------------------------------------
 JRP_TOP     := jrp_conv_tb
@@ -40,12 +30,9 @@ run-jrp4:
 	./$(JRP4_OBJ_DIR)/V$(JRP4_TOP)
 	python3 plot_jrp_func4.py
 
-# Default `make run` picks LSC_Func1 for backward compatibility; use
-# run-lsc / run-jrp / run-jrp4 explicitly to pick one.
-run: run-lsc
-
-waves-lsc:
-	gtkwave $(LSC_OBJ_DIR)/lsc_func1_tb.vcd &
+# Default `make run` picks JRP_CONV for backward compatibility; use
+# run-jrp / run-jrp4 explicitly to pick one.
+run: run-jrp
 
 waves-jrp:
 	gtkwave $(JRP_OBJ_DIR)/jrp_conv_tb.vcd &
@@ -54,4 +41,4 @@ waves-jrp4:
 	gtkwave $(JRP4_OBJ_DIR)/jrp_func4_tb.vcd &
 
 clean:
-	rm -rf $(LSC_OBJ_DIR) $(JRP_OBJ_DIR) $(JRP4_OBJ_DIR) obj_dir *.vcd jrp_func4_sweep.csv jrp_func4_transfer.png
+	rm -rf $(JRP_OBJ_DIR) $(JRP4_OBJ_DIR) obj_dir *.vcd jrp_func4_sweep.csv jrp_func4_transfer.png
