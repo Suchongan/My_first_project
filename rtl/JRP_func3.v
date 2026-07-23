@@ -15,38 +15,36 @@ wire [3:0] a_tmp = (dat_in[11:8] > 4'd14) ? 4'd14 : dat_in[11:8];//max 14
 wire [3:0] b_tmp = dat_in[7:4];
 wire [3:0] c_tmp = dat_in[3:0];
 
-wire [13:0] table1 = ( b_tmp  == 4'd00) ?  14'd0     : 
-                     ( b_tmp  == 4'd01) ?  14'd725   : 
-                     ( b_tmp  == 4'd02) ?  14'd1482  : 
-                     ( b_tmp  == 4'd03) ?  14'd2273  : 
-                     ( b_tmp  == 4'd04) ?  14'd3099  : 
-                     ( b_tmp  == 4'd05) ?  14'd3962  : 
-                     ( b_tmp  == 4'd06) ?  14'd4863  : 
-                     ( b_tmp  == 4'd07) ?  14'd5804  : 
-                     ( b_tmp  == 4'd08) ?  14'd6786  : 
-                     ( b_tmp  == 4'd09) ?  14'd7812  : 
-                     ( b_tmp  == 4'd10) ?  14'd8883  : 
-                     ( b_tmp  == 4'd11) ?  14'd10002 :
-                     ( b_tmp  == 4'd12) ?  14'd11170 :
-                     ( b_tmp  == 4'd13) ?  14'd12390 :
-                     ( b_tmp  == 4'd14) ?  14'd13664 : 14'd14994 ;
+// table1 (base) and table2 (slope) share the same b_tmp key, so they are
+// decoded together in a single parallel `case` instead of two independent
+// priority-mux ternary chains. This gives the synthesizer one balanced
+// 16:1 decode of b_tmp (matching the `shifta` case style used later in
+// this module) and halves b_tmp's decode fanout, shortening the stage-1
+// combinational path without changing function.
+reg [13:0] table1;
+reg [6:0]  table2;
+always@(*)
+begin
+   case(b_tmp)
+     4'd00 :  begin table1 = 14'd0     ; table2 = 7'd45 ; end
+     4'd01 :  begin table1 = 14'd725   ; table2 = 7'd47 ; end
+     4'd02 :  begin table1 = 14'd1482  ; table2 = 7'd49 ; end
+     4'd03 :  begin table1 = 14'd2273  ; table2 = 7'd51 ; end
+     4'd04 :  begin table1 = 14'd3099  ; table2 = 7'd53 ; end
+     4'd05 :  begin table1 = 14'd3962  ; table2 = 7'd56 ; end
+     4'd06 :  begin table1 = 14'd4863  ; table2 = 7'd58 ; end
+     4'd07 :  begin table1 = 14'd5804  ; table2 = 7'd61 ; end
+     4'd08 :  begin table1 = 14'd6786  ; table2 = 7'd64 ; end
+     4'd09 :  begin table1 = 14'd7812  ; table2 = 7'd66 ; end
+     4'd10 :  begin table1 = 14'd8883  ; table2 = 7'd69 ; end
+     4'd11 :  begin table1 = 14'd10002 ; table2 = 7'd73 ; end
+     4'd12 :  begin table1 = 14'd11170 ; table2 = 7'd76 ; end
+     4'd13 :  begin table1 = 14'd12390 ; table2 = 7'd79 ; end
+     4'd14 :  begin table1 = 14'd13664 ; table2 = 7'd83 ; end
+     default: begin table1 = 14'd14994 ; table2 = 7'd86 ; end
+   endcase
+end
 
-wire [6:0] table2 = ( b_tmp  == 4'd00) ?   {7'd45} :
-                    ( b_tmp  == 4'd01) ?   {7'd47} :
-                    ( b_tmp  == 4'd02) ?   {7'd49} :
-                    ( b_tmp  == 4'd03) ?   {7'd51} :
-                    ( b_tmp  == 4'd04) ?   {7'd53} :
-                    ( b_tmp  == 4'd05) ?   {7'd56} :
-                    ( b_tmp  == 4'd06) ?   {7'd58} :
-                    ( b_tmp  == 4'd07) ?   {7'd61} :
-                    ( b_tmp  == 4'd08) ?   {7'd64} :
-                    ( b_tmp  == 4'd09) ?   {7'd66} :
-                    ( b_tmp  == 4'd10) ?   {7'd69} :
-                    ( b_tmp  == 4'd11) ?   {7'd73} :
-                    ( b_tmp  == 4'd12) ?   {7'd76} :
-                    ( b_tmp  == 4'd13) ?   {7'd79} :
-                    ( b_tmp  == 4'd14) ?   {7'd83} : {7'd86} ;
-                
 
 reg [3:0]  a_tmp_d1;
 reg [3:0]  c_tmp_d1;

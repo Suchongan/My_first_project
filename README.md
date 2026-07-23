@@ -9,6 +9,12 @@
 
 一個3級、同步致能管線,對5x5像素視窗計算4個對角角點響應量值(`CR1~CR4`,2週期延遲)以及一組梯度/局部結構量(`Gx`、`Gy`、`Gx_abs`、`Gy_abs`、`C1`、`Ls0~Ls8`,3週期延遲)。所有暫存器由單一個 `pipe_en` 閘控。`Pxd_window_5x5_pipe1`/`pipe2` 需要是外部預先延遲好的 `Pxd_window_5x5_pipe0` 副本(分別延遲1、2個**致能週期**),因為設計選擇在後段管線重新讀取原始像素,而不是把整個250-bit視窗一路搬過內部暫存器。
 
+### `JRP_func3`(`rtl/JRP_func3.v`)
+
+一個3級、同步致能管線,屬於「分段線性(segment + slope + 內插)」的展開/反壓縮曲線:12-bit輸入、17-bit輸出,單一延遲(3週期)。輸入的三個nibble分別當作段(`a`,即指數,夾在最大14)、基底/斜率查表索引(`b`)、段內細部位置(`c`),輸出為 `(1<<a) + ((table1[b] + table2[b]*c) >> (14-a)) - 1`。因為輸入空間只有12-bit(4096種可能值),這個模組跟 `JRP_func4` 一樣採用**窮舉測試**。
+
+第一級的時序優化:原本 `table1`(基底)與 `table2`(斜率)各自寫成一條15層巢狀三元鏈,但兩者共用同一個 `b_tmp` 鍵。已合併成單一 `case(b_tmp)` 同時輸出兩張表(比照本模組後段 `shifta` 的寫法),讓合成工具產生一份平衡的16:1解碼、並把 `b_tmp` 的解碼fanout砍半,縮短第一級的組合路徑而不改變功能——查表常數與所有輸出都經窮舉測試確認與改寫前完全一致。
+
 ### `JRP_func4`(`rtl/JRP_func4.v`)
 
 一個3級、同步致能管線,屬於「leading-bit index + 查表」這類log2近似壓縮電路:8-bit輸入、7-bit輸出,單一延遲(3週期),只有一張6-bit查表、沒有二次插值乘法器。因為輸入空間只有256種可能值,這個模組的驗證改用**窮舉測試**(每個值都測到一次),而不是隨機抽樣。
@@ -17,10 +23,13 @@
 
 ```
 rtl/JRP_CONV.v              DUT 1
-rtl/JRP_func4.v              DUT 2
+rtl/JRP_func3.v             DUT 2
+rtl/JRP_func4.v             DUT 3
 rtl/JRP_func1.v ~ JRP_funcR.v  尚未建立驗證環境的其他模組
 tb/jrp_conv_ref_pkg.sv      JRP_CONV 的獨立黃金參考模型
 tb/jrp_conv_tb.sv           Testbench:激勵、scoreboard、reset/凍結測試
+tb/jrp_func3_ref_pkg.sv     JRP_func3 的獨立黃金參考模型
+tb/jrp_func3_tb.sv          Testbench:4096種輸入窮舉測試
 tb/jrp_func4_ref_pkg.sv     JRP_func4 的獨立黃金參考模型
 tb/jrp_func4_tb.sv          Testbench:256種輸入窮舉測試 + CSV輸出
 tb/plot_jrp_func4.py        讀取CSV、畫出 dat_in vs dat_out 轉換曲線
@@ -45,6 +54,7 @@ requirements.txt            Python 相依套件(matplotlib,畫圖用)
 ```sh
 cd tb
 make run-jrp     # 建置 + 模擬 JRP_CONV
+make run-jrp3    # 建置 + 模擬 JRP_func3(窮舉,4096種輸入)
 make run-jrp4    # 建置 + 模擬 JRP_func4(窮舉)+ 自動畫轉換曲線圖
 make waves-jrp   # 用 GTKWave 開 JRP_CONV 的波形
 make waves-jrp4  # 用 GTKWave 開 JRP_func4 的波形

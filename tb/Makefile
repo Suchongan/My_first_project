@@ -4,9 +4,9 @@ VERILATOR_FLAGS := --binary --timing --trace -Wall \
                     -Wno-DECLFILENAME -Wno-UNUSEDSIGNAL -Wno-UNUSEDPARAM \
                     -Wno-BLKSEQ -Wno-SYNCASYNCNET -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC
 
-.PHONY: all run run-jrp run-jrp4 waves clean
+.PHONY: all run run-jrp run-jrp3 run-jrp4 waves clean
 
-all: run-jrp run-jrp4
+all: run-jrp run-jrp3 run-jrp4
 
 # --- JRP_CONV ----------------------------------------------------------------
 JRP_TOP     := jrp_conv_tb
@@ -17,6 +17,16 @@ JRP_TB      := jrp_conv_ref_pkg.sv jrp_conv_tb.sv
 run-jrp:
 	verilator $(VERILATOR_FLAGS) --top-module $(JRP_TOP) -Mdir $(JRP_OBJ_DIR) $(JRP_TB) $(JRP_RTL)
 	./$(JRP_OBJ_DIR)/V$(JRP_TOP)
+
+# --- JRP_func3 -----------------------------------------------------------
+JRP3_TOP     := jrp_func3_tb
+JRP3_OBJ_DIR := obj_dir_jrp3
+JRP3_RTL     := $(RTL_DIR)/JRP_func3.v
+JRP3_TB      := jrp_func3_ref_pkg.sv jrp_func3_tb.sv
+
+run-jrp3:
+	verilator $(VERILATOR_FLAGS) --top-module $(JRP3_TOP) -Mdir $(JRP3_OBJ_DIR) $(JRP3_TB) $(JRP3_RTL)
+	./$(JRP3_OBJ_DIR)/V$(JRP3_TOP)
 
 # --- JRP_func4 -----------------------------------------------------------
 JRP4_TOP     := jrp_func4_tb
@@ -41,4 +51,4 @@ waves-jrp4:
 	gtkwave $(JRP4_OBJ_DIR)/jrp_func4_tb.vcd &
 
 clean:
-	rm -rf $(JRP_OBJ_DIR) $(JRP4_OBJ_DIR) obj_dir *.vcd jrp_func4_sweep.csv jrp_func4_transfer.png
+	rm -rf $(JRP_OBJ_DIR) $(JRP3_OBJ_DIR) $(JRP4_OBJ_DIR) obj_dir *.vcd jrp_func4_sweep.csv jrp_func4_transfer.png
