@@ -37,12 +37,50 @@
 
 ## 安裝
 
+需要 Python 3.10 以上(沒有的話,`install.ps1` 會告訴你怎麼裝)。
+
+### 一鍵安裝(推薦)
+
+在**目標這台 Windows** 上開一個 PowerShell,貼上執行:
+
+```powershell
+irm https://raw.githubusercontent.com/Suchongan/My_first_project/claude/windows-taskbar-token-usage-ghyq4k/tools/claude-token-tray/install.ps1 | iex
+```
+
+這行會自動:下載這個資料夾 → 裝 `pystray`/`Pillow` → 把預算/介面偏好寫進設定檔
+→ 在「啟動」資料夾建立捷徑(開機自動執行)→ 立刻啟動一次。裝到
+`%LOCALAPPDATA%\ClaudeTokenTray`,重複執行等於順便更新。
+
+預設值是 `--budget 2M --ui both`。想自訂,用「帶參數版」:
+
+```powershell
+iex "& { $(irm https://raw.githubusercontent.com/Suchongan/My_first_project/claude/windows-taskbar-token-usage-ghyq4k/tools/claude-token-tray/install.ps1) } -Budget 500000 -Ui tray"
+```
+
+可用參數:`-InstallDir`、`-Budget`(0 表示不設預算)、`-Ui tray|overlay|both`、
+`-NoAutostart`(不要開機自動啟動)、`-NoLaunch`(裝完不要立刻開)。細節見腳本開頭的
+註解說明(`Get-Help .\install.ps1 -Full`,或直接開檔案看)。
+
+解除安裝:
+
+```powershell
+iex "& { $(irm https://raw.githubusercontent.com/Suchongan/My_first_project/claude/windows-taskbar-token-usage-ghyq4k/tools/claude-token-tray/install.ps1) } -Uninstall"
+```
+
+會移除安裝目錄與開機捷徑;設定檔(`token_tray.json`)不會動,懶得留著也沒關係。
+
+> 這個 repo 是 public 的,所以 `irm` 不需要登入。如果之後轉成 private,匿名下載會
+> 失敗——改用瀏覽器登入 GitHub 後,到這個分支用 `Code → Download ZIP` 下載,
+> 解壓縮後把 `tools\claude-token-tray` 複製出來,手動執行 `pip install -r requirements.txt`。
+
+### 手動安裝
+
+如果你已經把整個 repo clone 到這台電腦(或就是想自己手動控制每一步):
+
 ```powershell
 cd tools\claude-token-tray
 pip install -r requirements.txt   # 只想用 overlay 的話可以跳過
 ```
-
-需要 Python 3.10 以上。
 
 ## 執行
 
@@ -153,6 +191,9 @@ python -m unittest discover -s tests -v
 ## 目錄結構
 
 ```
+install.ps1         一鍵安裝/更新/解除安裝腳本(見上方「一鍵安裝」)
+start_tray.bat      雙擊啟動,不留主控台視窗
+start_tray.vbs      雙擊啟動,連一閃而過的視窗都沒有;適合放進「啟動」資料夾
 claude_token_tray/
     collector.py   讀 transcript、增量掃描、聚合成 Snapshot
     pricing.py     模型費率表與費用估算
