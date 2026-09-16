@@ -26,6 +26,7 @@ tb/jrp_func4_tb.sv          Testbench:256種輸入窮舉測試 + CSV輸出
 tb/plot_jrp_func4.py        讀取CSV、畫出 dat_in vs dat_out 轉換曲線
 tb/Makefile                 兩個DUT共用的 Verilator build/run/wave 指令
 requirements.txt            Python 相依套件(matplotlib,畫圖用)
+tools/claude-token-tray/    與RTL無關的小工具:在Windows工作列即時顯示Claude Code的token用量
 ```
 
 ## 驗證原理

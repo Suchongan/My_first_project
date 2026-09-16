@@ -1,0 +1,5 @@
+# 系統匣模式(--ui tray)需要:
+pystray>=0.19.4
+Pillow>=9.0.0
+
+# 工作列浮動面板(--ui overlay)只用標準函式庫的 tkinter,不需要額外套件。
